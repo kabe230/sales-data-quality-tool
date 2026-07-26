@@ -4,9 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sales-data-quality"
-version = "0.1.0"
+version = "1.0.1"
 description = "営業案件CSV/Excelの整形・検証・集計を行うStreamlitアプリ"
 readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.12"
 dependencies = [
   "charset-normalizer>=3.4,<4",

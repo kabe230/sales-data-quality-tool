@@ -3,6 +3,7 @@
 [![CI](https://github.com/kabe230/sales-data-quality-tool/actions/workflows/ci.yml/badge.svg)](https://github.com/kabe230/sales-data-quality-tool/actions/workflows/ci.yml)
 ![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Community%20Cloud-FF4B4B?logo=streamlit&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 CSV／Excelで管理される営業案件データを、ブラウザ上で安全に整形・検証・集計する
 Streamlitアプリです。元ファイルを変更せず、修正履歴と指摘根拠を残しながら、
