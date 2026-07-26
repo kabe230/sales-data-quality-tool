@@ -13,6 +13,7 @@ Streamlitアプリです。元ファイルを変更せず、修正履歴と指�
 
 ## ドキュメント
 
+- [応募書類・面接用の紹介ガイド](PORTFOLIO_GUIDE.md)
 - [製品仕様](SPEC.md)
 - [受入基準](ACCEPTANCE_CRITERIA.md)
 - [固定12件のサンプルデータ仕様](SAMPLE_DATA_SPEC.md)
