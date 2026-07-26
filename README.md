@@ -4,6 +4,14 @@ CSV／Excelで管理される営業案件データを、ブラウザ上で安全
 Streamlitアプリです。元ファイルを変更せず、修正履歴と指摘根拠を残しながら、
 集計に利用できる行だけをレポートへ反映します。
 
+## ドキュメント
+
+- [製品仕様](SPEC.md)
+- [受入基準](ACCEPTANCE_CRITERIA.md)
+- [固定12件のサンプルデータ仕様](SAMPLE_DATA_SPEC.md)
+- [実装計画・進捗](IMPLEMENTATION_PLAN.md)
+- [当初の開発指示書](仕様書.md)
+
 ## 主な機能
 
 - UTF-8・Shift-JISのCSVと `.xlsx` の読込
