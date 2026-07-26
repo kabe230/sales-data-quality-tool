@@ -131,6 +131,15 @@ def validate(
         if options.warn_missing_department and is_blank(row["department"]):
             add(index, "department", Severity.WARNING, "MISSING_DEPARTMENT")
 
+    field_order = {field: position for position, field in enumerate(COLUMNS)}
+    issues.sort(
+        key=lambda issue: (
+            issue.source_row_number,
+            0 if issue.severity is Severity.ERROR else 1,
+            field_order[issue.field_name],
+            issue.code,
+        )
+    )
     result = cleaned.copy(deep=True)
     by_row: dict[int, list[ValidationIssue]] = {}
     for issue in issues:
@@ -144,5 +153,8 @@ def validate(
         result.at[index, "check_result"] = (
             "ERROR" if errors else "WARNING" if warnings else "NORMAL"
         )
-        result.at[index, "issue_summary"] = "\n".join(issue.message for issue in row_issues)
+        result.at[index, "issue_summary"] = " | ".join(
+            (f"[{issue.severity.value}] {COLUMNS[issue.field_name]}/{issue.code}: {issue.message}")
+            for issue in row_issues
+        )
     return result, tuple(issues)

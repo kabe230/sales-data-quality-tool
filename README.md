@@ -82,9 +82,15 @@ pytest --cov=src/sales_data_quality --cov-report=term-missing --cov-fail-under=8
 
 同じコマンドをGitHub Actionsでも実行します。
 
+現在の検証結果:
+
+- 固定12件の受入テストを含む33テストが成功
+- テストカバレッジ91.47%
+- 10,000行をカバレッジ計測下でも15秒以内で処理
+- `ruff check .` と `ruff format --check .` が成功
+
 ## 制約
 
 - 対応形式は `.csv` と `.xlsx` のみです。
 - メール検証は完全なRFC準拠ではなく、業務向けの簡易ルールです。
 - サーバーやデータベースへの保存、ユーザー認証は含みません。
-

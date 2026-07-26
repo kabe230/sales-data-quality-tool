@@ -134,7 +134,7 @@ def _clean_cell(field: str, value: object, options: CleaningOptions) -> tuple[ob
         if options.normalize_amount:
             current = current.replace("￥", "¥").replace("，", ",")
         current = _normalize_amount(current, options.normalize_amount)
-        if not _display_equal(before, current):
+        if isinstance(current, int) and str(current) != before:
             specific_code = "NORMALIZED_AMOUNT"
     elif field in {"registered_date", "expected_order_date"}:
         before = current

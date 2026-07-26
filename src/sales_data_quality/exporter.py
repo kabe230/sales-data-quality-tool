@@ -74,6 +74,15 @@ def to_csv_bytes(result: ProcessingResult) -> bytes:
 
 
 def _issues_frame(result: ProcessingResult) -> pd.DataFrame:
+    columns = [
+        "元データ行番号",
+        "重要度",
+        "指摘コード",
+        "項目",
+        "修正前の値",
+        "整形後の値",
+        "内容",
+    ]
     return pd.DataFrame(
         [
             {
@@ -86,11 +95,20 @@ def _issues_frame(result: ProcessingResult) -> pd.DataFrame:
                 "内容": item.message,
             }
             for item in result.issues
-        ]
+        ],
+        columns=columns,
     )
 
 
 def _corrections_frame(result: ProcessingResult) -> pd.DataFrame:
+    columns = [
+        "元データ行番号",
+        "修正コード",
+        "項目",
+        "修正前の値",
+        "修正後の値",
+        "内容",
+    ]
     return pd.DataFrame(
         [
             {
@@ -102,7 +120,8 @@ def _corrections_frame(result: ProcessingResult) -> pd.DataFrame:
                 "内容": item.message,
             }
             for item in result.corrections
-        ]
+        ],
+        columns=columns,
     )
 
 
@@ -125,13 +144,31 @@ def _overview_frame(result: ProcessingResult) -> pd.DataFrame:
         "warning_issue_count": "警告指摘数",
         "valid_rate": "有効率（%）",
     }
-    return pd.DataFrame({"項目": [labels[key] for key in metrics], "値": list(metrics.values())})
+    rows: list[dict[str, object]] = []
+    for key, value in result.processing_log.items():
+        rows.append({"区分": "処理基本情報", "項目": key, "値": value})
+    for key, value in metrics.items():
+        rows.append({"区分": "基本指標", "項目": labels[key], "値": value})
+    for item in result.summaries["issue_breakdown"].to_dict(orient="records"):
+        rows.append(
+            {
+                "区分": "指摘内訳",
+                "重要度": item["severity"],
+                "指摘コード": item["code"],
+                "指摘件数": item["issue_count"],
+                "該当行数": item["affected_row_count"],
+            }
+        )
+    return pd.DataFrame(
+        rows,
+        columns=["区分", "項目", "値", "重要度", "指摘コード", "指摘件数", "該当行数"],
+    )
 
 
 def _excel_value(value: object) -> object:
     if isinstance(value, Decimal):
         return float(value)
-    return value
+    return formula_safe(value)
 
 
 def to_excel_bytes(result: ProcessingResult) -> bytes:

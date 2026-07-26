@@ -48,7 +48,7 @@ class DataQualityService:
         extras = tuple(column for column in renamed.columns if column not in COLUMNS)
         order = [*COLUMNS, *extras]
         renamed = renamed[order]
-        renamed.insert(0, "source_row_number", list(dataset.source_row_numbers))
+        renamed["source_row_number"] = list(dataset.source_row_numbers)
         for column in INTERNAL_COLUMNS[1:]:
             renamed[column] = "" if column in {"check_result", "issue_summary"} else 0
         return renamed, extras
