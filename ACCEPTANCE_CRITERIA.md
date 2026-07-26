@@ -42,7 +42,7 @@ pytest --cov=src/sales_data_quality --cov-report=term-missing --cov-fail-under=8
 - [x] 概要、整形済みデータ、指摘、修正履歴、各集計を確認できる
 - [x] CSVとExcelをダウンロードできる
 - [x] エラー時に原因と対処が日本語で表示される
-- [ ] README掲載用の代表画面スクリーンショットを追加する
+- [x] README掲載用の代表画面スクリーンショットを追加する
 
 スクリーンショットは機能受入後の最終工程とし、画面仕様が確定した状態で取得します。
 
@@ -57,16 +57,15 @@ pytest --cov=src/sales_data_quality --cov-report=term-missing --cov-fail-under=8
 | 10,000行性能テスト | カバレッジ計測下で15秒以内 |
 | Ruff lint | 成功 |
 | Ruff format check | 成功 |
-| GitHub Actions | `main`のコミット`29a5b42`で成功 |
+| GitHub Actions | `main`の最新コミットで成功（Actions画面で確認） |
 
 文書追加後も上記コマンドを再実行し、GitHubへ反映した後はActionsの成功を確認します。
 
 ## リリース前の最終確認
 
-- [ ] 文書と実装に差異がない
-- [ ] 自動テストとRuffがローカルで成功
-- [ ] GitHub Actionsが最新コミットで成功
-- [ ] READMEのリンクがすべて有効
-- [ ] READMEのスクリーンショットが最新UIと一致
-- [ ] 公開範囲に機密情報、個人情報、不要な生成物が含まれない
-
+- [x] 文書と実装に差異がない
+- [x] 自動テストとRuffがローカルで成功
+- [x] GitHub Actionsが最新コミットで成功
+- [x] READMEのリンクがすべて有効
+- [x] READMEのスクリーンショットが最新UIと一致
+- [x] 公開範囲に機密情報、個人情報、不要な生成物が含まれない
