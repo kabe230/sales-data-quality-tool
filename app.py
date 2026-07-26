@@ -8,7 +8,7 @@ import streamlit as st
 
 from sales_data_quality.config import COLUMNS, INTERNAL_DISPLAY, CleaningOptions, ValidationOptions
 from sales_data_quality.exceptions import DataQualityError
-from sales_data_quality.exporter import to_csv_bytes, to_excel_bytes
+from sales_data_quality.exporter import SUMMARY_DISPLAY, to_csv_bytes, to_excel_bytes
 from sales_data_quality.loader import list_excel_sheets, load_file
 from sales_data_quality.service import DataQualityService
 
@@ -246,8 +246,9 @@ if result:
                 "issue_breakdown": "指摘内訳",
             }.get,
         )
+        summary_frame = result.summaries[summary_key].rename(columns=SUMMARY_DISPLAY[summary_key])
         st.dataframe(
-            streamlit_safe_frame(result.summaries[summary_key]),
+            streamlit_safe_frame(summary_frame),
             width="stretch",
             hide_index=True,
         )

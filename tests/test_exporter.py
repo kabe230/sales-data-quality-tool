@@ -19,7 +19,7 @@ def test_exports_have_expected_encoding_and_sheets(dataset):
     assert csv_bytes.startswith(b"\xef\xbb\xbf")
     assert "元データ行番号" in csv_bytes.decode("utf-8-sig")
 
-    workbook = load_workbook(BytesIO(to_excel_bytes(result)), read_only=True)
+    workbook = load_workbook(BytesIO(to_excel_bytes(result)))
     assert workbook.sheetnames == [
         "概要",
         "整形済みデータ",
@@ -31,3 +31,13 @@ def test_exports_have_expected_encoding_and_sheets(dataset):
         "登録月別集計",
         "受注予定月別集計",
     ]
+
+    overview = workbook["概要"]
+    rate_cells = {
+        row[1].value: row[2]
+        for row in overview.iter_rows(min_row=2)
+        if row[1].value in {"正常率（%）", "有効率（%）"}
+    }
+    assert rate_cells["正常率（%）"].value == round(result.metrics.normal_rate, 1)
+    assert rate_cells["有効率（%）"].value == round(result.metrics.valid_rate, 1)
+    assert {cell.number_format for cell in rate_cells.values()} == {"0.0"}

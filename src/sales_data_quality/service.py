@@ -98,7 +98,7 @@ class DataQualityService:
             "started_at": started.isoformat(timespec="seconds"),
             "ended_at": ended.isoformat(timespec="seconds"),
             "execution_date": execution_date.isoformat(),
-            "input_rows": len(dataset.dataframe),
+            "input_rows": len(dataset.dataframe) + dataset.blank_row_count,
             "blank_rows": dataset.blank_row_count,
             "processed_rows": len(checked),
             "extra_columns": list(extras),

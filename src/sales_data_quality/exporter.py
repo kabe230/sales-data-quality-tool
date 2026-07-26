@@ -148,6 +148,8 @@ def _overview_frame(result: ProcessingResult) -> pd.DataFrame:
     for key, value in result.processing_log.items():
         rows.append({"区分": "処理基本情報", "項目": key, "値": value})
     for key, value in metrics.items():
+        if key in {"normal_rate", "valid_rate"}:
+            value = round(float(value), 1)
         rows.append({"区分": "基本指標", "項目": labels[key], "値": value})
     for item in result.summaries["issue_breakdown"].to_dict(orient="records"):
         rows.append(
@@ -235,4 +237,8 @@ def to_excel_bytes(result: ProcessingResult) -> bytes:
                     for cell in column_cells[1:]:
                         if isinstance(cell.value, date):
                             cell.number_format = "yyyy-mm-dd"
+            if name == "概要":
+                for row in worksheet.iter_rows(min_row=2):
+                    if row[1].value in {"正常率（%）", "有効率（%）"}:
+                        row[2].number_format = "0.0"
     return output.getvalue()
