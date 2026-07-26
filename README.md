@@ -4,6 +4,8 @@ CSV／Excelで管理される営業案件データを、ブラウザ上で安全
 Streamlitアプリです。元ファイルを変更せず、修正履歴と指摘根拠を残しながら、
 集計に利用できる行だけをレポートへ反映します。
 
+[公開デモを開く](https://kabe230-sales-data-quality-tool.streamlit.app/)
+
 ## ドキュメント
 
 - [製品仕様](SPEC.md)
