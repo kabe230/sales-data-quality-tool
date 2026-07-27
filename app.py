@@ -125,6 +125,17 @@ if input_mode == "sample":
     except OSError:
         logger.exception("サンプルデータの読み込みに失敗しました")
         load_error = DataQualityError("SAMPLE_READ_ERROR", "サンプルデータを読み込めませんでした。")
+    if content is not None:
+        st.download_button(
+            "このサンプルCSVをダウンロード",
+            data=b"\xef\xbb\xbf" + content,
+            file_name=source_filename,
+            mime="text/csv; charset=utf-8",
+            width="stretch",
+        )
+        st.caption(
+            "ExcelやVS Codeで編集後、「自分のファイルを使う」からそのまま再アップロードできます。"
+        )
 else:
     st.subheader("自分のファイルを使う")
     uploaded = st.file_uploader("案件データを選択", type=["csv", "xlsx"])
