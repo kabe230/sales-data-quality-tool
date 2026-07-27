@@ -131,7 +131,7 @@ def make_auto_cleanup_rows() -> list[dict[str, str]]:
             ),
             "受注予定日": expected.replace("-", "/") if expected else "",
             "備考": (
-                " 提案内容\r\n次回確認 " if number % 10 == 0 else f" 表記ゆれサンプル {number:03d} "
+                " 提案内容\r次回確認 " if number % 10 == 0 else f" 表記ゆれサンプル {number:03d} "
             ),
             "流入経路": CHANNELS[(number - 1) % len(CHANNELS)],
         }
