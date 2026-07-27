@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import date
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -14,6 +15,33 @@ from sales_data_quality.service import DataQualityService
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("sales_data_quality")
+
+SAMPLE_DIRECTORY = Path(__file__).resolve().parent / "sample_data"
+SAMPLE_PATTERNS = {
+    "all_valid": {
+        "label": "① すべて正常",
+        "description": (
+            "6件すべてが正常です。指摘0件の状態と、6種類のステータス別集計を確認できます。"
+        ),
+        "filename": "sample_all_valid.csv",
+    },
+    "auto_cleanup": {
+        "label": "② 自動整形を体験",
+        "description": (
+            "全角文字・余分な空白・日付・金額・ステータスの表記ゆれを自動修正します。"
+            "修正履歴が大きく変わります。"
+        ),
+        "filename": "sample_auto_cleanup.csv",
+    },
+    "quality_issues": {
+        "label": "③ エラー・警告を確認",
+        "description": (
+            "必須項目、形式、重複、日付のエラーと、担当部署・受注予定日の警告を"
+            "まとめて確認できます。"
+        ),
+        "filename": "sample_quality_issues.csv",
+    },
+}
 
 
 def streamlit_safe_frame(frame: pd.DataFrame) -> pd.DataFrame:
@@ -37,7 +65,12 @@ def display_value(value: object) -> str:
     return str(value)
 
 
-st.set_page_config(page_title="営業案件データ品質チェック", page_icon="✓", layout="wide")
+st.set_page_config(
+    page_title="営業案件データ品質チェック",
+    page_icon="✓",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
 st.title("営業案件データ品質チェック")
 st.caption("CSV / Excelを安全に整形・検証し、集計レポートを作成します。")
 
@@ -56,34 +89,75 @@ with st.sidebar:
     warn_before = st.checkbox("登録日前の受注予定日を警告", True)
     warn_department = st.checkbox("担当部署の未入力を警告", True)
 
-uploaded = st.file_uploader("案件データを選択", type=["csv", "xlsx"])
+input_mode = st.radio(
+    "入力方法",
+    ["sample", "upload"],
+    format_func={
+        "sample": "サンプルデータで試す",
+        "upload": "自分のファイルを使う",
+    }.get,
+    horizontal=True,
+)
+
+content = None
+source_filename = None
+encoding = "auto"
+sheet_name = None
+run_button_label = "チェックを実行"
+load_error = None
+
+if input_mode == "sample":
+    st.subheader("サンプルデータで試す")
+    sample_key = st.radio(
+        "確認したいパターン",
+        list(SAMPLE_PATTERNS),
+        format_func=lambda key: SAMPLE_PATTERNS[key]["label"],
+        horizontal=True,
+    )
+    selected_sample = SAMPLE_PATTERNS[sample_key]
+    st.info(selected_sample["description"])
+    st.caption("サンプルデータは画面上で処理され、サーバーには保存されません。")
+    source_filename = selected_sample["filename"]
+    run_button_label = "このサンプルで試す"
+    try:
+        content = (SAMPLE_DIRECTORY / source_filename).read_bytes()
+    except OSError:
+        logger.exception("サンプルデータの読み込みに失敗しました")
+        load_error = DataQualityError("SAMPLE_READ_ERROR", "サンプルデータを読み込めませんでした。")
+else:
+    st.subheader("自分のファイルを使う")
+    uploaded = st.file_uploader("案件データを選択", type=["csv", "xlsx"])
+    if uploaded:
+        content = uploaded.getvalue()
+        source_filename = uploaded.name
+        if uploaded.name.lower().endswith(".csv"):
+            encoding = st.selectbox(
+                "CSV文字コード",
+                ["auto", "utf-8", "cp932"],
+                format_func=lambda value: {
+                    "auto": "自動判定",
+                    "utf-8": "UTF-8",
+                    "cp932": "Shift-JIS",
+                }[value],
+            )
+        else:
+            try:
+                sheet_name = st.selectbox("対象シート", list_excel_sheets(content))
+            except DataQualityError as exc:
+                load_error = exc
+
 dataset = None
 preflight = None
-load_error = None
-if uploaded:
-    content = uploaded.getvalue()
-    encoding = "auto"
-    sheet_name = None
-    if uploaded.name.lower().endswith(".csv"):
-        encoding = st.selectbox(
-            "CSV文字コード",
-            ["auto", "utf-8", "cp932"],
-            format_func=lambda x: {
-                "auto": "自動判定",
-                "utf-8": "UTF-8",
-                "cp932": "Shift-JIS",
-            }[x],
-        )
-    else:
-        try:
-            sheet_name = st.selectbox("対象シート", list_excel_sheets(content))
-        except DataQualityError as exc:
-            st.error(f"{exc.code}: {exc}")
-            st.stop()
-
+if content is not None:
     try:
-        dataset = load_file(content, uploaded.name, encoding=encoding, sheet_name=sheet_name)
-        preflight = DataQualityService().inspect_schema(dataset)
+        if load_error is None:
+            dataset = load_file(
+                content,
+                source_filename,
+                encoding=encoding,
+                sheet_name=sheet_name,
+            )
+            preflight = DataQualityService().inspect_schema(dataset)
     except DataQualityError as exc:
         load_error = exc
 
@@ -112,7 +186,12 @@ if uploaded:
         or preflight.missing_required_columns
         or preflight.reserved_conflicts
     )
-    if st.button("チェックを実行", type="primary", width="stretch", disabled=blocked):
+    if st.button(
+        run_button_label,
+        type="primary",
+        width="stretch",
+        disabled=blocked,
+    ):
         try:
             progress = st.progress(0, text="準備中")
             result = DataQualityService().process(
@@ -134,7 +213,7 @@ if uploaded:
             st.error("処理中に予期しないエラーが発生しました。")
 
 result = st.session_state.get("result")
-if uploaded and st.session_state.get("result_filename") != uploaded.name:
+if source_filename is None or st.session_state.get("result_filename") != source_filename:
     result = None
 if result:
     metrics = result.metrics
