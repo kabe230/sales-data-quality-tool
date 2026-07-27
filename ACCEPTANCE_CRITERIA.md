@@ -53,7 +53,7 @@ pytest --cov=src/sales_data_quality --cov-report=term-missing --cov-fail-under=8
 | 項目 | 結果 |
 |---|---|
 | 自動テスト | 35件成功 |
-| カバレッジ | 91.71% |
+| カバレッジ | 91.87% |
 | 10,000行性能テスト | カバレッジ計測下で15秒以内 |
 | Ruff lint | 成功 |
 | Ruff format check | 成功 |

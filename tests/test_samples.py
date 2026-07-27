@@ -11,19 +11,22 @@ EXECUTION_DATE = date(2026, 7, 27)
 def test_portfolio_samples_produce_clearly_different_results():
     expected = {
         "sample_all_valid.csv": {
-            "rows": (6, 6, 0, 0),
+            "rows": (100, 100, 0, 0),
             "issue_count": 0,
             "correction_count": 0,
+            "blank_count": 0,
         },
         "sample_auto_cleanup.csv": {
-            "rows": (6, 6, 0, 0),
-            "issue_count": 0,
-            "correction_count": 63,
+            "rows": (100, 90, 5, 5),
+            "issue_count": 10,
+            "correction_count": 1042,
+            "blank_count": 2,
         },
         "sample_quality_issues.csv": {
-            "rows": (11, 1, 2, 8),
-            "issue_count": 10,
+            "rows": (100, 45, 5, 50),
+            "issue_count": 58,
             "correction_count": 0,
+            "blank_count": 0,
         },
     }
 
@@ -41,3 +44,47 @@ def test_portfolio_samples_produce_clearly_different_results():
         ) == expected_result["rows"]
         assert len(result.issues) == expected_result["issue_count"]
         assert len(result.corrections) == expected_result["correction_count"]
+        assert dataset.blank_row_count == expected_result["blank_count"]
+
+    cleanup = DataQualityService().process(
+        load_csv(
+            (SAMPLE_DIRECTORY / "sample_auto_cleanup.csv").read_bytes(),
+            "sample_auto_cleanup.csv",
+        ),
+        execution_date=EXECUTION_DATE,
+    )
+    assert {item.code for item in cleanup.corrections} == {
+        "NORMALIZED_AMOUNT",
+        "NORMALIZED_DATE",
+        "NORMALIZED_EMAIL",
+        "NORMALIZED_FULL_WIDTH_NUMBER",
+        "NORMALIZED_LINE_BREAK",
+        "NORMALIZED_PROJECT_ID",
+        "NORMALIZED_STATUS",
+        "TRIMMED_TEXT",
+    }
+    assert cleanup.processing_log["extra_columns"] == ["流入経路"]
+
+    issues = DataQualityService().process(
+        load_csv(
+            (SAMPLE_DIRECTORY / "sample_quality_issues.csv").read_bytes(),
+            "sample_quality_issues.csv",
+        ),
+        execution_date=EXECUTION_DATE,
+    )
+    assert {item.code for item in issues.issues} == {
+        "AMOUNT_OUT_OF_RANGE",
+        "DUPLICATE_PROJECT_ID",
+        "EMPTY_REQUIRED_VALUE",
+        "EXPECTED_DATE_BEFORE_REGISTERED_DATE",
+        "EXPECTED_DATE_MISSING",
+        "FUTURE_REGISTERED_DATE",
+        "INVALID_AMOUNT",
+        "INVALID_DATE",
+        "INVALID_EMAIL",
+        "INVALID_PROJECT_ID",
+        "MISSING_DEPARTMENT",
+        "NEGATIVE_AMOUNT",
+        "PAST_EXPECTED_ORDER_DATE",
+        "UNKNOWN_STATUS",
+    }
